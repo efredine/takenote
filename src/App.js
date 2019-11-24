@@ -6,17 +6,17 @@ import DeleteSamples from './components/DeleteSamples';
 
 function App() {
   const refreshHandler = useRef();
+  function handleRefresh() {
+    if (refreshHandler.current) {
+      refreshHandler.current();
+    }
+  }
   return (
     <div className="App">
       <header className="App-header">
         <div>Notes</div>
-        <DeleteSamples
-          onReload={() => {
-            if (refreshHandler.current) {
-              refreshHandler.current();
-            }
-          }}
-        />
+        <DeleteSamples onReload={handleRefresh} />
+        <button onClick={handleRefresh}>Refresh</button>
       </header>
       <main>
         <Notes refreshHandler={refreshHandler} />

@@ -1,6 +1,7 @@
 import React from 'react';
 import queryNotes from '../../repository/queryNotes';
 import GiveMeDataButton from './GiveMeDataButton';
+import DeleteButton from './DeleteButton';
 import { useRepositoryQuery } from '../../repository';
 import './Table.css';
 
@@ -10,14 +11,27 @@ export default function Notes({ refreshHandler }) {
   if (refreshHandler) {
     refreshHandler.current = refetch;
   }
+  function formatRows(rowList) {
+    const rows = [];
+    for (const { rowid, title, content } of rowList) {
+      rows.push(
+        <Row
+          key={rowid}
+          rowid={rowid}
+          title={title}
+          content={content}
+          refetch={refetch}
+        />,
+      );
+    }
+    return rows;
+  }
   return (
     <div>
       <table className="Table">
         <thead>
           <tr>
-            <th scope="col" className="IdColumn">
-              Id
-            </th>
+            <th scope="col" className="ActionColumn"></th>
             <th scope="col" className="TitleColumn">
               Title
             </th>
@@ -35,18 +49,13 @@ export default function Notes({ refreshHandler }) {
   );
 }
 
-function formatRows(rowList) {
-  const rows = [];
-  for (const { rowid, title, content } of rowList) {
-    rows.push(<Row key={rowid} id={rowid} title={title} content={content} />);
-  }
-  return rows;
-}
-
-function Row({ id, title, content }) {
+function Row({ rowid, title, content, refetch }) {
   return (
     <tr>
-      <td>{id}</td>
+      <td>
+        <button>Edit</button>
+        <DeleteButton rowid={rowid} onDelete={refetch} />
+      </td>
       <td>{title}</td>
       <td className="ContentData">{content}</td>
     </tr>

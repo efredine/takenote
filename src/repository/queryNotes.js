@@ -2,7 +2,8 @@ import { executeSql } from '../storage';
 
 const QUERY_NOTES = `
   SELECT rowid, created, updated, title, content
-  FROM notes;
+  FROM notes
+  ORDER BY updated DESC, rowid DESC;
 `;
 
 const queryNotes = () => tx => {
