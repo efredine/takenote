@@ -19,6 +19,13 @@ function useRepositoryQuery(query) {
   const [started, setStarted] = useState(false);
   const [result, setResult] = useState();
   const [txError, setTxError] = useState();
+  const refetch = useCallback(() => {
+    if (result) {
+      setResult(undefined);
+      setTxError(undefined);
+      setStarted(false);
+    }
+  }, [setResult, setTxError, setStarted, result]);
 
   if (error) {
     return { error };
@@ -39,7 +46,7 @@ function useRepositoryQuery(query) {
       .catch(setTxError);
   }
   const txLoading = started && !result;
-  return { error: txError, loading: txLoading, result };
+  return { refetch, error: txError, loading: txLoading, result };
 }
 
 function useRepositoryMutation(repositoryFunction) {
@@ -64,7 +71,6 @@ function useRepositoryMutation(repositoryFunction) {
     return { loading };
   }
   if (!txError && !started && txData) {
-    console.log('starting a transaction');
     setStarted(true);
     setResult(undefined);
     setTxError(undefined);

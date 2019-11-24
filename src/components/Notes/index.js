@@ -4,10 +4,12 @@ import GiveMeDataButton from './GiveMeDataButton';
 import { useRepositoryQuery } from '../../repository';
 import './Table.css';
 
-export default function Notes() {
-  const { result, error, loading } = useRepositoryQuery(queryNotes());
+export default function Notes({ refreshHandler }) {
+  const { result, error, loading, refetch } = useRepositoryQuery(queryNotes());
   const rows = result && result.rows ? result.rows : [];
-
+  if (refreshHandler) {
+    refreshHandler.current = refetch;
+  }
   return (
     <div>
       <table className="Table">
@@ -26,7 +28,9 @@ export default function Notes() {
         </thead>
         <tbody>{formatRows(rows)}</tbody>
       </table>
-      {!loading && result && result.rows.length === 0 && <GiveMeDataButton />}
+      {!loading && result && result.rows.length === 0 && (
+        <GiveMeDataButton onReload={refetch} />
+      )}
     </div>
   );
 }
