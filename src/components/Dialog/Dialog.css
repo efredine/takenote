@@ -1,0 +1,61 @@
+.DialogContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  z-index: 100;
+  background-color: white;
+}
+
+.DialogContent {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.DialogHeader {
+  border-bottom: 1px solid black;
+  padding: 10px;
+}
+
+.DialogBody {
+  height: calc(100% - 65px);
+}
+
+.DialogFooter {
+  align-items: flex-end;
+  border-top: 1px solid black;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+}
+
+form.DialogForm {
+  padding: 20px;
+}
+
+form.DialogForm > input {
+  display: block;
+  width: 600px;
+  margin-bottom: 20px;
+  font-size: 16px;
+  padding: 10px;
+}
+
+.TextArea {
+  display: block;
+  overflow: auto;
+  width: 600px;
+  height: 200px;
+  margin-bottom: 20px;
+  font-size: 16px;
+  padding: 10px;
+}
+
+form.DialogForm > label {
+  text-align: left;
+}

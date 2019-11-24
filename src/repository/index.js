@@ -59,6 +59,7 @@ function useRepositoryMutation(repositoryFunction) {
     data => {
       if (!started) {
         setTxData(data);
+        setStarted(false);
       }
     },
     [setTxData, started],
@@ -77,11 +78,7 @@ function useRepositoryMutation(repositoryFunction) {
     transaction(db)
       .then(tx => repositoryFunction(txData)(tx))
       .then(({ _, results }) => setResult(results))
-      .catch(setTxError)
-      .finally(() => {
-        setTxData(undefined);
-        setStarted(false);
-      });
+      .catch(setTxError);
   }
   const txLoading = started && !result;
   return { error: txError, loading: txLoading, result, transactWith };
