@@ -1,30 +1,50 @@
 import React from 'react';
-import faker from 'faker';
-import insertNote from '../../repository/insertNote';
-import { useRepository, insertRows } from '../../repository';
+import queryNotes from '../../repository/queryNotes';
+import GiveMeDataButton from './GiveMeDataButton';
+import { useRepositoryQuery } from '../../repository';
+import './Table.css';
 
 export default function Notes() {
-  const { mutateWith, result, error, loading } = useRepository(insertRows);
-  console.log({ result, error, loading, mutateWith });
-
-  function handleClick() {
-    const rows = [];
-    for (let i = 0; i < 60; i++) {
-      rows.push({
-        title: faker.company.catchPhrase(),
-        content: faker.lorem.paragraphs(),
-      });
-    }
-    mutateWith({
-      rows,
-      insertWith: insertNote,
-    });
-  }
+  const { result, error, loading } = useRepositoryQuery(queryNotes());
+  const rows = result && result.rows ? result.rows : [];
 
   return (
     <div>
-      <div>Notes</div>
-      <button onClick={handleClick}>Give Me Data</button>
+      <table className="Table">
+        <thead>
+          <tr>
+            <th scope="col" className="IdColumn">
+              Id
+            </th>
+            <th scope="col" className="TitleColumn">
+              Title
+            </th>
+            <th scope="col" className="ContentColumn">
+              Content
+            </th>
+          </tr>
+        </thead>
+        <tbody>{formatRows(rows)}</tbody>
+      </table>
+      {!loading && result && result.rows.length === 0 && <GiveMeDataButton />}
     </div>
+  );
+}
+
+function formatRows(rowList) {
+  const rows = [];
+  for (const { rowid, title, content } of rowList) {
+    rows.push(<Row key={rowid} id={rowid} title={title} content={content} />);
+  }
+  return rows;
+}
+
+function Row({ id, title, content }) {
+  return (
+    <tr>
+      <td>{id}</td>
+      <td>{title}</td>
+      <td className="ContentData">{content}</td>
+    </tr>
   );
 }

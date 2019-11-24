@@ -1,0 +1,36 @@
+.Table {
+  text-align: left;
+  /* table-layout: fixed; */
+  width: 100%;
+  text-overflow: ellipsis;
+  padding: 0px 20px;
+}
+
+table.Table > thead > tr > th {
+  padding: 10px;
+}
+
+table.Table > tbody > tr > td {
+  vertical-align: top;
+  padding: 5px;
+}
+
+.IdColumn {
+  width: 5%;
+}
+
+.TitleColumn {
+  width: 20%;
+}
+
+.ContentColumn {
+  width: 75%;
+}
+
+.ContentData {
+  width: 75%;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

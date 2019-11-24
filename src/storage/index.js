@@ -7,7 +7,6 @@ const DEFAULT_SIZE = 5 * 1024 * 1024;
 
 const CREATE_TABLES = `
   CREATE TABLE IF NOT EXISTS notes (
-    id INTEGER PRIMARY KEY,
     created INTEGER NOT NULL,
     updated INTEGER NOT NULL,
     title TEXT NOT NULL,

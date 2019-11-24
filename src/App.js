@@ -9,7 +9,7 @@ function App() {
   console.log({ loading, db, error });
   return (
     <div className="App">
-      <header className="App-header">Header</header>
+      <header className="App-header">Notes</header>
       <main>
         <Notes />
       </main>
