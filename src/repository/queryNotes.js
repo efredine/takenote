@@ -1,4 +1,4 @@
-import { executeSql } from './index';
+import { executeSql } from '../storage';
 
 const QUERY_NOTES = `
   SELECT rowid, created, updated, title, content

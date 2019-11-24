@@ -1,30 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useDatabase } from '../storage';
-
-function transaction(db) {
-  return new Promise((resolve, reject) => {
-    db.transaction(tx => {
-      resolve(tx);
-    }, reject);
-  });
-}
-
-function readTransaction(db) {
-  return new Promise((resolve, reject) => {
-    db.readTransaction(resolve, reject);
-  });
-}
-
-function executeSql(tx, sql, parameters) {
-  return new Promise((resolve, reject) => {
-    tx.executeSql(
-      sql,
-      parameters,
-      (tx, results) => resolve({ tx, results }),
-      reject,
-    );
-  });
-}
+import { useDatabase, transaction, readTransaction } from '../storage';
 
 const processRows = ({ rows, rowAction }) => tx => {
   const results = [];
@@ -52,7 +27,6 @@ function useRepositoryQuery(query) {
     return { loading };
   }
   if (!txError && !started) {
-    console.log('starting a query');
     setStarted(true);
     setResult(undefined);
     setTxError(undefined);
@@ -107,10 +81,4 @@ function useRepositoryMutation(repositoryFunction) {
   return { error: txError, loading: txLoading, result, transactWith };
 }
 
-export {
-  useRepositoryQuery,
-  useRepositoryMutation,
-  executeSql,
-  processRows,
-  transaction,
-};
+export { useRepositoryQuery, useRepositoryMutation, processRows };

@@ -15,6 +15,7 @@ export default function GiveMeDataButton() {
       rows.push({
         title: faker.company.catchPhrase(),
         content: faker.lorem.paragraphs(),
+        sample: 1,
       });
     }
     transactWith({
