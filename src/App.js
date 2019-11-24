@@ -1,24 +1,18 @@
 import React from 'react';
-import logo from './logo.svg';
+import { useDatabase } from './storage';
 import './App.css';
+import './components/Notes';
+import Notes from './components/Notes';
 
 function App() {
+  const { loading, db, error } = useDatabase();
+  console.log({ loading, db, error });
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <header className="App-header">Header</header>
+      <main>
+        <Notes />
+      </main>
     </div>
   );
 }
