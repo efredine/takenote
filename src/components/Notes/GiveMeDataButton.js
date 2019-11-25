@@ -1,18 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import faker from 'faker';
 import insertNote from '../../repository/insertNote';
+import useTriggerWhenLoaded from '../../hooks/useTriggerWhenLoaded';
 import { useRepositoryMutation, processRows } from '../../repository';
 
 export default function GiveMeDataButton({ onReload }) {
   const { transactWith, result, error, loading } = useRepositoryMutation(
     processRows,
   );
-  const [reloading, setReloading] = useState(false);
-  useEffect(() => {
-    if (reloading && result) {
-      onReload();
-    }
-  }, [reloading, setReloading, result, onReload]);
+  const { setLoading } = useTriggerWhenLoaded(result, onReload);
   console.log({ result, error, loading, transactWith });
 
   function handleClick() {
@@ -28,7 +24,7 @@ export default function GiveMeDataButton({ onReload }) {
       rows,
       rowAction: insertNote,
     });
-    setReloading(true);
+    setLoading(true);
   }
   return (
     <button onClick={handleClick} disabled={loading}>

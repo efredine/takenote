@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useReducer, useCallback } from 'react';
+import React, { useState, useReducer, useCallback } from 'react';
+import useTriggerWhenLoaded from '../../hooks/useTriggerWhenLoaded';
 import { useRepositoryMutation } from '../../repository';
 import insertNote from '../../repository/insertNote';
 import updateNote from '../../repository/updateNote';
@@ -17,52 +18,46 @@ export default function Dialog({ rowid, title = '', content = '', onClose }) {
     rowid ? updateNote : insertNote,
   );
   const [showErrors, setShowErrors] = useState(false);
-  const [reloading, setReloading] = useState(false);
-  useEffect(() => {
-    if (reloading && result) {
-      console.log('closing the dialog');
-      onClose(true);
+  const onReload = useCallback(() => onClose(true), [onClose]);
+  const { setLoading } = useTriggerWhenLoaded(result, onReload);
+  function reducer(state, action) {
+    const { value } = action;
+    switch (action.type) {
+      case 'updateTitle':
+        return {
+          ...state,
+          title: {
+            value,
+            valid: valid(value),
+            dirty: dirty(title, value),
+          },
+        };
+      case 'updateContent':
+        return {
+          ...state,
+          content: {
+            value,
+            valid: valid(value),
+            dirty: dirty(content, value),
+          },
+        };
+      default:
+        throw new Error();
     }
-  }, [reloading, setReloading, result, onClose]);
-  const [state, dispatch] = useReducer(
-    function reducer(state, action) {
-      const { value } = action;
-      switch (action.type) {
-        case 'updateTitle':
-          return {
-            ...state,
-            title: {
-              value,
-              valid: valid(value),
-              dirty: dirty(title, value),
-            },
-          };
-        case 'updateContent':
-          return {
-            ...state,
-            content: {
-              value,
-              valid: valid(value),
-              dirty: dirty(content, value),
-            },
-          };
-        default:
-          throw new Error();
-      }
+  }
+  const initialState = {
+    title: {
+      value: title,
+      valid: valid(title),
+      dirty: false,
     },
-    {
-      title: {
-        value: title,
-        valid: valid(title),
-        dirty: false,
-      },
-      content: {
-        value: content,
-        valid: valid(content),
-        dirty: false,
-      },
+    content: {
+      value: content,
+      valid: valid(content),
+      dirty: false,
     },
-  );
+  };
+  const [state, dispatch] = useReducer(reducer, initialState);
   const handleTitleChange = useCallback(
     e => dispatch({ type: 'updateTitle', value: e.target.value }),
     [],
@@ -89,7 +84,7 @@ export default function Dialog({ rowid, title = '', content = '', onClose }) {
           sample: 0,
         });
       }
-      setReloading(true);
+      setLoading(true);
       console.log('Saving transaction.');
       return;
     }
