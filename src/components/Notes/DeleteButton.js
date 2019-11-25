@@ -3,9 +3,7 @@ import { useRepositoryMutation } from '../../repository';
 import deleteNote from '../../repository/deleteNote';
 
 export default function DeleteButton({ rowid, onDelete }) {
-  const { transactWith, result, error, loading } = useRepositoryMutation(
-    deleteNote,
-  );
+  const { transactWith, result, loading } = useRepositoryMutation(deleteNote);
   const [reloading, setReloading] = useState(false);
   useEffect(() => {
     if (reloading && result) {
@@ -15,7 +13,7 @@ export default function DeleteButton({ rowid, onDelete }) {
   const handleClick = useCallback(() => {
     transactWith({ rowid });
     setReloading(true);
-  });
+  }, [rowid, setReloading, transactWith]);
   return (
     <button onClick={handleClick} disabled={loading}>
       Delete

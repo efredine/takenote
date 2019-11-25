@@ -13,7 +13,7 @@ function dirty(before, after) {
 }
 
 export default function Dialog({ rowid, title = '', content = '', onClose }) {
-  const { transactWith, result, error, loading } = useRepositoryMutation(
+  const { transactWith, result, loading } = useRepositoryMutation(
     rowid ? updateNote : insertNote,
   );
   const [showErrors, setShowErrors] = useState(false);

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useReducer } from 'react';
 import { useDatabase, transaction, readTransaction } from '../storage';
 
 const processRows = ({ rows, rowAction }) => tx => {
@@ -14,74 +14,114 @@ const processRows = ({ rows, rowAction }) => tx => {
     .then((tx, _) => ({ tx, results }));
 };
 
-function useRepositoryQuery(query) {
-  const { db, loading, error } = useDatabase();
-  const [started, setStarted] = useState(false);
-  const [result, setResult] = useState();
-  const [txError, setTxError] = useState();
-  const refetch = useCallback(() => {
-    if (result) {
-      setResult(undefined);
-      setTxError(undefined);
-      setStarted(false);
-    }
-  }, [setResult, setTxError, setStarted, result]);
-
+function withValidDatabase({ db, loading, error }, callback) {
   if (error) {
     return { error };
   }
   if (loading || !db) {
     return { loading };
   }
-  if (!txError && !started) {
-    setStarted(true);
-    setResult(undefined);
-    setTxError(undefined);
-    readTransaction(db)
-      .then(tx => query(tx))
-      .then(({ tx, results }) => {
-        console.log('got result', { tx, results });
-        setResult(results);
-      })
-      .catch(setTxError);
+  return callback(db);
+}
+
+function queryReducer(state, action) {
+  switch (action.type) {
+    case 'refetch':
+      if (state.loading) {
+        return state;
+      }
+      return {
+        start: true,
+        loading: false,
+      };
+    case 'initiate':
+      return {
+        loading: true,
+      };
+    case 'result':
+      return {
+        loading: false,
+        result: action.result,
+      };
+    case 'error':
+      return {
+        loading: false,
+        error: action.error,
+      };
+    default:
+      throw new Error();
   }
-  const txLoading = started && !result;
-  return { refetch, error: txError, loading: txLoading, result };
+}
+
+function useRepositoryQuery(query) {
+  const [state, dispatch] = useReducer(queryReducer, {
+    start: true,
+    loading: false,
+  });
+  const refetch = useCallback(() => dispatch({ type: 'refetch' }), [dispatch]);
+  return withValidDatabase(useDatabase(), db => {
+    if (state.start) {
+      dispatch({ type: 'initiate' });
+      readTransaction(db)
+        .then(tx => query(tx))
+        .then(({ tx, results }) => {
+          console.log('got result', { tx, results });
+          dispatch({ type: 'result', result: results });
+        })
+        .catch(error => dispatch({ type: 'error', error }));
+    }
+    return { ...state, refetch };
+  });
+}
+
+function mutationReducer(state, action) {
+  switch (action.type) {
+    case 'fetch':
+      if (state.loading) {
+        return state;
+      }
+      return {
+        txData: action.txData,
+        loading: false,
+      };
+    case 'initiate':
+      return {
+        ...state,
+        loading: true,
+      };
+    case 'result':
+      return {
+        loading: false,
+        result: action.result,
+      };
+    case 'error':
+      return {
+        loading: false,
+        error: action.error,
+      };
+    default:
+      throw new Error();
+  }
 }
 
 function useRepositoryMutation(repositoryFunction) {
-  const { db, loading, error } = useDatabase();
-  const [started, setStarted] = useState(false);
-  const [result, setResult] = useState();
-  const [txError, setTxError] = useState();
-  const [txData, setTxData] = useState();
+  const [state, dispatch] = useReducer(mutationReducer, { loading: false });
   const transactWith = useCallback(
-    data => {
-      if (!started) {
-        setTxData(data);
-        setStarted(false);
-      }
-    },
-    [setTxData, started],
+    data => dispatch({ type: 'fetch', txData: data }),
+    [dispatch],
   );
 
-  if (error) {
-    return { error };
-  }
-  if (loading || !db) {
-    return { loading };
-  }
-  if (!txError && !started && txData) {
-    setStarted(true);
-    setResult(undefined);
-    setTxError(undefined);
-    transaction(db)
-      .then(tx => repositoryFunction(txData)(tx))
-      .then(({ _, results }) => setResult(results))
-      .catch(setTxError);
-  }
-  const txLoading = started && !result;
-  return { error: txError, loading: txLoading, result, transactWith };
+  return withValidDatabase(useDatabase(), db => {
+    const { txData, loading } = state;
+    if (txData && !loading) {
+      dispatch({ type: 'initiate' });
+      transaction(db)
+        .then(tx => repositoryFunction(txData)(tx))
+        .then(({ _, results }) => dispatch({ type: 'result', result: results }))
+        .catch(error => dispatch({ type: 'error', error }));
+    }
+    return { ...state, transactWith };
+  });
 }
 
 export { useRepositoryQuery, useRepositoryMutation, processRows };
