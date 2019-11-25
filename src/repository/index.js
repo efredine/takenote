@@ -2,16 +2,16 @@ import { useCallback, useReducer } from 'react';
 import { useDatabase, transaction, readTransaction } from '../storage';
 
 const processRows = ({ rows, rowAction }) => tx => {
-  const results = [];
+  const accumulatedResults = [];
   return rows
     .reduce(async (previousPromise, nextRow) => {
       await previousPromise;
       return rowAction(nextRow)(tx).then((tx, result) => {
-        results.push(result);
-        return { tx, results };
+        accumulatedResults.push(result);
+        return { tx, accumulatedResults };
       });
     }, Promise.resolve)
-    .then((tx, _) => ({ tx, results }));
+    .then((tx, _) => ({ tx, result: accumulatedResults }));
 };
 
 function withValidDatabase({ db, loading, error }, callback) {
@@ -64,9 +64,8 @@ function useRepositoryQuery(query) {
       dispatch({ type: 'initiate' });
       readTransaction(db)
         .then(tx => query(tx))
-        .then(({ tx, results }) => {
-          console.log('got result', { tx, results });
-          dispatch({ type: 'result', result: results });
+        .then(({ tx, result }) => {
+          dispatch({ type: 'result', result });
         })
         .catch(error => dispatch({ type: 'error', error }));
     }
@@ -117,7 +116,7 @@ function useRepositoryMutation(repositoryFunction) {
       dispatch({ type: 'initiate' });
       transaction(db)
         .then(tx => repositoryFunction(txData)(tx))
-        .then(({ _, results }) => dispatch({ type: 'result', result: results }))
+        .then(({ _, result }) => dispatch({ type: 'result', result }))
         .catch(error => dispatch({ type: 'error', error }));
     }
     return { ...state, transactWith };

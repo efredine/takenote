@@ -39,7 +39,7 @@ function executeSql(tx, sql, parameters) {
     tx.executeSql(
       sql,
       parameters,
-      (tx, results) => resolve({ tx, results }),
+      (tx, result) => resolve({ tx, result }),
       reject,
     );
   });
